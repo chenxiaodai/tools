@@ -1,0 +1,16 @@
+spring:
+    application:
+        name: platon-recover
+    jpa:
+        show-sql: true
+        hibernate:
+            ddl-auto: update
+    datasource:
+        url: jdbc:mysql://192.168.9.191:3306/recover-new?useUnicode=true&characterEncoding=utf-8&useSSL=false
+        username: platon
+        password: platon
+biz:
+    collect:
+        url: http://192.168.120.145:6789
+        ignore: ./platon-recover-address.ignore
+
