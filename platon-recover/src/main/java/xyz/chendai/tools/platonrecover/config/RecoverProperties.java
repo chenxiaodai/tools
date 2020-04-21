@@ -7,8 +7,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-@ConfigurationProperties(prefix="biz.collect")
+@ConfigurationProperties(prefix="biz.recover")
 @Data
-public class CollectProperties {
+public class RecoverProperties {
     private List<String> url;
+    private Long chainId;
+    private String returnWalletAddress;
 }

@@ -12,5 +12,8 @@ spring:
 biz:
     collect:
         url: http://192.168.120.145:6789
-        ignore: ./platon-recover-address.ignore
+    recover:
+        url: http://192.168.120.145:6789
+        chain-id: 101
+        return-wallet-address: '0x60ceca9c1290ee56b98d4e160ef0453f7c40d219'
 

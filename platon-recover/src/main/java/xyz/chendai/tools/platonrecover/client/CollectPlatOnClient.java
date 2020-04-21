@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 
 @Component
-public class PlatOnClient {
+public class CollectPlatOnClient {
 
     private List<Web3j> web3jList= Collections.synchronizedList(new ArrayList<>());
     private AtomicLong atomicLong = new AtomicLong();
@@ -111,8 +111,5 @@ public class PlatOnClient {
         }else{
             throw new Exception("no nodes");
         }
-
-
-
     }
 }

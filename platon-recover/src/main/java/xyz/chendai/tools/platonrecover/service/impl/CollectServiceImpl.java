@@ -6,7 +6,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.protocol.core.methods.response.Transaction;
-import xyz.chendai.tools.platonrecover.client.PlatOnClient;
+import xyz.chendai.tools.platonrecover.client.CollectPlatOnClient;
 import xyz.chendai.tools.platonrecover.config.CollectProperties;
 import xyz.chendai.tools.platonrecover.data.RecoverRepository;
 import xyz.chendai.tools.platonrecover.entity.Recover;
@@ -24,11 +24,11 @@ import java.util.stream.StreamSupport;
 public class CollectServiceImpl implements CollectService {
 
     @Autowired
-    RecoverRepository recoverRepository;
+    private RecoverRepository recoverRepository;
     @Autowired
-    PlatOnClient client;
+    private CollectPlatOnClient client;
     @Autowired
-    CollectProperties collectProperties;
+    private CollectProperties collectProperties;
 
     @Override
     public void collectAddress() throws Exception {
@@ -78,7 +78,7 @@ public class CollectServiceImpl implements CollectService {
 
         // 加载内部地址
         final Set<String> innerAddress = new HashSet<>();
-        File ignoreFile = FileUtils.getFile(System.getProperty("user.dir"), collectProperties.getIgnore());
+        File ignoreFile = FileUtils.getFile(System.getProperty("user.dir"), "address.ignore");
         List<String> addressList = FileUtils.readLines(ignoreFile,"UTF-8");
         innerAddress.addAll(addressList);
 
@@ -98,21 +98,25 @@ public class CollectServiceImpl implements CollectService {
                         String address = item.getAddress();
                         String code = client.platonGetCode(address);
                         BigInteger balance = client.platonGetBalance(address);
-                        Recover.Type type;
                         if(!"0x".equals(code)){
                             // 如果是普通合约地址
-                            type = Recover.Type.CONTRACT;
+                            item.setType(Recover.Type.CONTRACT);
                         } else if(innerContractAddress.contains(address)){
                             // 如果是内置合约地址
-                            type = Recover.Type.CONTRACT;
+                            item.setType(Recover.Type.CONTRACT);
                         } else if(innerAddress.contains(address)){
                             // 如果是指定需要忽略的地址
-                            type = Recover.Type.IGNORE;
+                            item.setType(Recover.Type.IGNORE);
                         } else{
                             // 正常账户
-                            type = Recover.Type.NORMAL;
+                            item.setType(Recover.Type.NORMAL);
                         }
-                        return Recover.builder().address(address).balance(balance).type(type).status(Recover.Status.PEDDING).createTime(now).updateTime(now).build();
+
+                        item.setUpdateTime(now);
+                        item.setStatus(Recover.Status.PEDDING);
+                        item.setBalance(balance);
+
+                        return item;
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
