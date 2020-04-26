@@ -21,6 +21,7 @@
 
     <modules>
         <module>platon-recover</module>
+        <module>platon-press</module>
     </modules>
 
     <dependencyManagement>
@@ -53,6 +54,13 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.8.1</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>com.lmax</groupId>
+                <artifactId>disruptor</artifactId>
+                <version>3.4.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

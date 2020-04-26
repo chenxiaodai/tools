@@ -1,0 +1,52 @@
+spring:
+    application:
+        name: platon-press
+press:
+    #压测交易类型
+    tx-type: TRANFER,WASM,EVM
+    #每种交易类型占比，数值对应tx-type配置中相同的位置
+    tx-rate: 5,3,2
+    #最大tps
+    tps: 10
+    #总的交易数
+    total-tx: 20
+    #节点rpc端口，支持http或websocket两种格式
+    node-url: http://192.168.120.145:6789
+    #节点公钥
+    node-public-key: 0x111111111111111
+    #链id
+    chain-id: 101
+    #钱包文件路径
+    keystore-dir: ./platon-press-config/wallet
+    #钱包文件密码
+    keystore-passwd: 88888888
+    #转账交易的gasPrice
+    tranfer-gas-price: 21000
+    #转账交易的gasLimit
+    tranfer-gas-limit: 1000000
+    #转账交易是否需要等待回执
+    tranfer-need-receipt: false
+    #转账的金额，单位VON
+    tranfer-value: 10000000000000000000000
+    #转账的接收地址列表
+    tranfer-to-addrs:
+        - "0xfbdf3c5bf983cdf67685883f8eaabfd4e31249ec"
+        - "0xce77845c5cc019ca2965d99bea91c4a1fd854a64"
+    #转账的接收文件
+    tranfer-to-addrs-file: ./platon-press-config/tranfer-receive-addr-file.address
+    #evm交易的gasPrice
+    evm-gas-price: 21000
+    #evm交易的gasLimit
+    evm-gas-limit: 1000000
+    #evm交易的gasLimit
+    evm-need-receipt: true
+    #evm测试合约地址
+    evm-addr: "0xfbdf3c5bf983cdf67685883f8eaabfd4e31249ec"
+    #wasm交易的gasPrice
+    wasm-gas-price: 21000
+    #wasm交易的gasLimit
+    wasm-gas-limit: 1000000
+    #wasm交易是否需要等待回执
+    wasm-need-receipt: true
+    #wasm测试合约地址
+    wasm-addr: "0xaedf3c5bf983cdf67685883f8eaabfd4e31249ec"
