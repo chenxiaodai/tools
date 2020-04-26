@@ -1,7 +1,9 @@
 package com.platon.tools.platonpress.manager.impl;
 
+import com.platon.tools.platonpress.client.PlatOnClient;
 import com.platon.tools.platonpress.config.PressProperties;
-import com.platon.tools.platonpress.manager.CredentialsManager;
+import com.platon.tools.platonpress.manager.FromInfoManager;
+import com.platon.tools.platonpress.manager.dto.FromInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,23 +13,27 @@ import org.web3j.crypto.WalletUtils;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
-import java.io.IOException;
-import java.util.LinkedList;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class CredentialsManagerImpl implements CredentialsManager {
+public class FromInfoManagerImpl implements FromInfoManager {
     @Autowired
     private PressProperties pressProperties;
-    private Queue<Credentials> freeCredentials =  new LinkedList<>();
+    @Autowired
+    private PlatOnClient platOnClient;
+    private Queue<FromInfo> freeCredentials =  new ConcurrentLinkedQueue<>();
 
     @PostConstruct
-    public void init() throws IOException {
-        List<Credentials> credentialsList;
+    public void init()  {
+        List<FromInfo> credentialsList;
 
         File keystoreDir = pressProperties.getKeystoreDir();
         String keystorePasswd = pressProperties.getKeystorePasswd();
@@ -43,7 +49,11 @@ public class CredentialsManagerImpl implements CredentialsManager {
                         }
                     })
                     .filter(optional -> optional.isPresent())
-                    .map(optional -> (Credentials)optional.get())
+                    .map(optional -> {
+                        Credentials credentials = (Credentials) optional.get();
+                        BigInteger nonce = platOnClient.platonGetTransactionCount(credentials.getAddress());
+                        return FromInfo.builder().credentials(credentials).norce(new AtomicLong(nonce.longValue())).build();
+                    })
                     .collect(Collectors.toList());
             freeCredentials.addAll(credentialsList);
         }
@@ -53,12 +63,22 @@ public class CredentialsManagerImpl implements CredentialsManager {
     }
 
     @Override
-    public Credentials borrow() {
-        return null;
+    public FromInfo borrow() {
+        FromInfo fromInfo = freeCredentials.poll();
+        while (fromInfo == null){
+            log.warn("wait borrow credentials!");
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            fromInfo = freeCredentials.poll();
+        }
+        return fromInfo;
     }
 
     @Override
-    public void yet(Credentials credentials) {
-
+    public void yet(FromInfo fromInfo) {
+        freeCredentials.offer(fromInfo);
     }
 }

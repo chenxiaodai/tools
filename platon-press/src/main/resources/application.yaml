@@ -17,7 +17,7 @@ press:
     #链id
     chain-id: 101
     #钱包文件路径
-    keystore-dir: ./platon-press-config/wallet
+    keystore-dir: ./platon-press-config/wallets
     #钱包文件密码
     keystore-passwd: 88888888
     #转账交易的gasPrice

@@ -8,6 +8,7 @@ class PlatonRecoverApplicationTests {
 
     @Test
     void contextLoads() {
+        
     }
 
 }
