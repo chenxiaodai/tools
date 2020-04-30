@@ -41,7 +41,7 @@ public class PlatOnClient {
                 webSocketService.connect();
                 web3j = Web3j.build(webSocketService);
             } catch (ConnectException e) {
-                log.error("ws connect exception ! ", e);
+                throw new RuntimeException(e);
             }
         }
     }
@@ -55,7 +55,6 @@ public class PlatOnClient {
             }
             return ethGetTransactionCount.getTransactionCount();
         } catch (Exception e){
-            log.error("call rpc error!",e);
             throw new RuntimeException(e);
         }
     }
@@ -66,10 +65,8 @@ public class PlatOnClient {
             if(platonSendTransaction.hasError()){
                 throw new RuntimeException(platonSendTransaction.getError().getMessage());
             }
-
             return platonSendTransaction.getTransactionHash();
         } catch (Exception e){
-            log.error("call rpc error!",e);
             throw new RuntimeException(e);
         }
     }
@@ -77,15 +74,12 @@ public class PlatOnClient {
     public Optional<TransactionReceipt> platonGetTransactionReceipt(String txHash) {
         try {
             PlatonGetTransactionReceipt platonSendTransaction = web3j.platonGetTransactionReceipt(txHash).send();
+            if(platonSendTransaction.hasError()){
+                throw new RuntimeException(platonSendTransaction.getError().getMessage());
+            }
             return platonSendTransaction.getTransactionReceipt();
         } catch (Exception e){
-            log.error("call rpc error!",e);
             throw new RuntimeException(e);
         }
     }
-
-
-
-
-
 }

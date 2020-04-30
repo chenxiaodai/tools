@@ -36,7 +36,7 @@ public class ToAddressManagerImpl implements ToAddressManager {
         tempAddressList = pressProperties.getTranferToAddrs();
         //从tranfer-to-addrs-file中加载地址
         File addressFile = pressProperties.getTranferToAddrsFile();
-        if(addressFile.exists() && addressFile.isFile()){
+        if(addressFile !=null && addressFile.exists() && addressFile.isFile()){
             List<String> tempFileAddressList = FileUtils.readLines(addressFile, StandardCharsets.UTF_8);
             tempAddressList.addAll(tempFileAddressList);
         }

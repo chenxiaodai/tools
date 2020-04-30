@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+
+	<id>dist</id>
+
+	<formats>
+		<format>tar</format>
+	</formats>
+
+	<includeBaseDirectory>true</includeBaseDirectory>
+
+	<files>
+		<file>
+			<source>${basedir}/target/${project.build.finalName}.jar</source>
+			<outputDirectory>/</outputDirectory>
+		</file>
+		<file>
+			<source>${basedir}/src/main/resources/application.yaml</source>
+			<outputDirectory>/</outputDirectory>
+		</file>
+		<file>
+			<source>${basedir}/README.md</source>
+			<outputDirectory>/</outputDirectory>
+		</file>
+		<file>
+			<source>../platon-press-config/to-address.txt</source>
+			<outputDirectory>/platon-press-config/</outputDirectory>
+		</file>
+	</files>
+</assembly>

@@ -1,0 +1,5 @@
+{
+	"chainId":"101",
+	"nodeAddress":"http://127.0.0.1",
+	"nodeRpcPort":"6789"
+}

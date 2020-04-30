@@ -9,23 +9,32 @@ import com.platon.tools.platonpress.event.task.EvmContractTxEvent;
 import com.platon.tools.platonpress.event.task.TranferTxEvent;
 import com.platon.tools.platonpress.event.task.TxEvent;
 import com.platon.tools.platonpress.event.task.WasmContractTxEvent;
-import com.platon.tools.platonpress.manager.FromInfoManager;
+import com.platon.tools.platonpress.manager.CredentialsManager;
+import com.platon.tools.platonpress.manager.NonceManager;
 import com.platon.tools.platonpress.manager.ToAddressManager;
-import com.platon.tools.platonpress.manager.dto.FromInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.WasmFunctionEncoder;
+import org.web3j.abi.datatypes.Function;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.WasmFunction;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.utils.Numeric;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -34,7 +43,9 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
     @Autowired
     private ToAddressManager toAddressManager;
     @Autowired
-    private FromInfoManager credentialsManager;
+    private CredentialsManager credentialsManager;
+    @Autowired
+    private NonceManager nonceManager;
     @Autowired
     private PlatOnClient platOnClient;
     @Autowired
@@ -42,28 +53,33 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
 
     @Override
     public void onEvent(ObjectEvent<TxEvent> event) throws Exception {
-        FromInfo fromInfo = null;
+        Credentials credentials = null;
+        BigInteger nonce;
+        String to;
         String txHashLocal;
         ResultEvent resultEvent = new ResultEvent();
         resultEvent.setBegin(new Date());
         try {
             TxEvent txEvent = event.getEvent();
+            resultEvent.setEvent(txEvent);
             //1. 获得Credentials
-            fromInfo = credentialsManager.borrow();
-            //2. 获得to地址
-            String to = toAddressManager.getAddress(txEvent);
-            //3. 构造交易对象
-            RawTransaction rawTransaction = createTransaction(txEvent,fromInfo,to);
-            //4. 签名
-            String signedData = signTransaction(rawTransaction,fromInfo);
-            //5. 提交
+            credentials = credentialsManager.borrow();
+            //2. 获得Credentials对应的nonce
+            nonce = nonceManager.getNonce(credentials.getAddress());
+            //3. 获得to地址
+            to = toAddressManager.getAddress(txEvent);
+            //4. 构造交易对象
+            RawTransaction rawTransaction = createTransaction(txEvent, credentials, to, nonce);
+            //5. 签名
+            String signedData = signTransaction(rawTransaction,credentials);
+            //6. 提交
             txHashLocal = Hash.sha3(signedData);
             resultEvent.setTxHash(txHashLocal);
             String txHashRemote = platOnClient.platonSendRawTransaction(signedData);
             if (!txHashRemote.equals(txHashLocal)) {
                 throw new RuntimeException("交易hash不一致！");
             }
-            fromInfo.getNorce().incrementAndGet();
+            nonceManager.incrementNonce(credentials.getAddress());
             resultEvent.setCommitOk(true);
             //6. 查询回执
             if(txEvent.isNeedReceipt()){
@@ -71,34 +87,36 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
                 if(transactionReceipt.isStatusOK()){
                     resultEvent.setReceiptOk(true);
                 }else{
-                    System.out.println("交易失败！ txHash = " + txHashRemote);
                     resultEvent.setReceiptOk(false);
                 }
             }
-            credentialsManager.yet(fromInfo);
         } catch (Exception e){
-            log.error("handler execute error!", e);
             resultEvent.setMsg(e.getMessage());
-            if(fromInfo != null ){
-                credentialsManager.yet(fromInfo);
-            }
+
         } finally {
+            if(pressProperties.getConsumerThreadSleepDuration() > 0){
+                TimeUnit.MILLISECONDS.sleep(pressProperties.getConsumerThreadSleepDuration());
+            }
             resultEvent.setEnd(new Date());
+            if(credentials != null ){
+                credentialsManager.yet(credentials);
+            }
             log.info(resultEvent.toString());
         }
     }
 
-    private TransactionReceipt checkTransaction(String txHash) throws Exception{
-        int attempts = 180;
-        long sleepDuration = 1000;
+    private TransactionReceipt checkTransaction(String txHash) {
+
+        int attempts = pressProperties.getReceiptAttempts();
+        long sleepDuration = pressProperties.getReceiptSleepDuration();
 
         Optional<TransactionReceipt> receiptOptional = platOnClient.platonGetTransactionReceipt(txHash);
         for (int i = 0; i < attempts; i++) {
             if (!receiptOptional.isPresent()) {
                 try {
-                    Thread.sleep(sleepDuration);
+                    TimeUnit.MILLISECONDS.sleep(sleepDuration);
                 } catch (InterruptedException e) {
-                    throw new TransactionException(e);
+                    throw new RuntimeException(e);
                 }
                 receiptOptional = platOnClient.platonGetTransactionReceipt(txHash);
             } else {
@@ -112,14 +130,12 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
     }
 
 
-    private String signTransaction(RawTransaction rawTransaction,  FromInfo fromInfo){
-        Credentials credentials = fromInfo.getCredentials();
+    private String signTransaction(RawTransaction rawTransaction,  Credentials credentials){
         byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, pressProperties.getChainId(), credentials);
         return Numeric.toHexString(signedMessage);
     }
 
-    private RawTransaction createTransaction(TxEvent txEvent, FromInfo fromInfo, String to){
-        BigInteger nonce = BigInteger.valueOf(fromInfo.getNorce().get());
+    private RawTransaction createTransaction(TxEvent txEvent, Credentials credentials, String to, BigInteger nonce){
         BigInteger gasPrice = txEvent.getGasPrice();
         BigInteger gasLimit = txEvent.getGasLimit();
         BigInteger amount = BigInteger.ZERO;
@@ -128,16 +144,13 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
         }
         String data = "";
         if(txEvent instanceof WasmContractTxEvent){
-            //TODO
+            WasmFunction wasmFunction = new WasmFunction("record", Arrays.asList(pressProperties.getNodePublicKey()), Void.class);
+            data = WasmFunctionEncoder.encode(wasmFunction);
         }
         if(txEvent instanceof EvmContractTxEvent){
-            //TODO
+            Function evmFunction = new Function("record", Arrays.<Type>asList(new Utf8String(pressProperties.getNodePublicKey())), Collections.<TypeReference<?>>emptyList());
+            data = FunctionEncoder.encode(evmFunction);
         }
-        return RawTransaction.createTransaction(nonce, gasPrice, gasLimit, to, amount, "");
+        return RawTransaction.createTransaction(nonce, gasPrice, gasLimit, to, amount, data);
     }
-
-
-
-
-
 }
