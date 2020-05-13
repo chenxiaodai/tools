@@ -22,6 +22,7 @@
     <modules>
         <module>platon-recover</module>
         <module>platon-press</module>
+        <module>platon-demo-exchange</module>
     </modules>
 
     <dependencyManagement>
