@@ -1,0 +1,16 @@
+spring:
+    application:
+        name: platon-demo-pos
+    main:
+        banner-mode: off
+logging:
+    pattern:
+        console: "%date %msg%n"
+        file: "%date %msg%n"
+    level:
+        root: error
+        spring: error
+        org.web3j: error
+        com.platon.tools: info
+    file:
+        name: ./logs/demo-pos.log
