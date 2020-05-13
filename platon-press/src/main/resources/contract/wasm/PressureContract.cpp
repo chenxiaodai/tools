@@ -44,12 +44,7 @@ CONTRACT PressureContract : public platon::Contract{
             map_nodeid.self().clear();
         }
     }
-
-    CONST u128 getValue(std::string &nodeID)
-    {
-        u128 value = map_nodeid.self()[nodeID];
-        return value;
-    }
+  }
 
     CONST std::string getAll()
     {

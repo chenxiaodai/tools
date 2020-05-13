@@ -17,7 +17,7 @@ import java.util.List;
 public class PressProperties {
     private List<TxTypeEnum> txType = Arrays.asList(TxTypeEnum.TRANFER, TxTypeEnum.WASM, TxTypeEnum.EVM);
     private List<Integer> txRate = Arrays.asList(5,3,2);
-    private int tps = 100;
+    private int tps = 50;
     private long totalTx = Long.MAX_VALUE;
     private String nodeUrl;
     private String nodePublicKey;
@@ -26,22 +26,28 @@ public class PressProperties {
     private String  keystorePasswd;
     private File keysFile = new File("./platon-press-config/keys.csv");
 
-    private BigInteger tranferGasPrice = BigInteger.valueOf(500000000000L);
+    private boolean tranferEstimateGas = false;
+    private BigInteger tranferGasInsuranceValue = BigInteger.valueOf(0L);
+    private BigInteger tranferGasPrice = BigInteger.valueOf(10000000000L);
     private BigInteger tranferGasLimit = BigInteger.valueOf(21000L);
     private boolean tranferNeedReceipt = false;
     private BigInteger tranferValue = BigInteger.ONE;
     private List<String>  tranferToAddrs = new ArrayList<>();
     private File tranferToAddrsFile = new File("./platon-press-config/to-address.txt");
 
+    private boolean evmEstimateGas = true;
+    private BigInteger evmGasInsuranceValue = BigInteger.valueOf(0L);
     private BigInteger evmGasPrice = tranferGasPrice;
     private BigInteger evmGasLimit = BigInteger.valueOf(42017L);
     private boolean evmNeedReceipt = tranferNeedReceipt;
-    private String evmAddr = "0x905e9b518fbc71952145bcaa974c09168a7d7c41";
+    private String evmAddr = "0x75832e679fed57a33a43639fcf02adb7b717e9f5";
 
+    private boolean wasmEstimateGas = true;
+    private BigInteger wasmGasInsuranceValue = BigInteger.valueOf(50000L);
     private BigInteger wasmGasPrice = tranferGasPrice;
     private BigInteger wasmGasLimit = BigInteger.valueOf(42017L);
     private boolean wasmNeedReceipt = tranferNeedReceipt;
-    private String wasmAddr = "0x515d82f18f6a7d4c54702c973cb6f6deb88878d8";
+    private String wasmAddr = "0xdef88f99fe516c158f390da5c725a88180e93491";
 
     /**
      * 是否本地管理自增nonce
@@ -54,7 +60,7 @@ public class PressProperties {
     /**
      * 消费线程的数据
      */
-    private int disruptorConsumerNumber  = 300;
+    private int disruptorConsumerNumber  = 1;
     /**
      * 获取回执的次数
      */
@@ -66,5 +72,5 @@ public class PressProperties {
     /**
      * 消费线程sleep的时间，单位毫秒
      */
-    private int consumerThreadSleepDuration  = 3000;
+    private int consumerThreadSleepDuration  = 0;
 }

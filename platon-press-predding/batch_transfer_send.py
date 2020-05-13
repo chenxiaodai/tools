@@ -1,7 +1,7 @@
 import datetime
 import json
 import sys
-
+from time import sleep
 
 import click
 from client_sdk_python import Web3
@@ -10,9 +10,7 @@ from client_sdk_python.providers import HTTPProvider
 from platon_utility import read_csv, transaction_str_to_int
 
 # 发送交易
-def transfer_send(url, signdata) -> tuple:
-    w3 = Web3(HTTPProvider(url))
-    platon = Eth(w3)
+def transfer_send(platon, signdata) -> tuple:
     platon.sendRawTransaction(signdata)
     #tx_hash = HexBytes(platon.sendRawTransaction(signdata)).hex()
     # res = platon.waitForTransactionReceipt(tx_hash)
@@ -45,13 +43,22 @@ def batch_send_transfer(txfile, config):
         for one_transaction in transaction_list_raw:
             transaction_list.append(transaction_str_to_int(one_transaction))
 
+        if len(transaction_list) == 0 :
+            print("have not transaction.")
+            exit(1)
+        w3 = Web3(HTTPProvider(url))
+        platon = Eth(w3)
+        # 获取当前nonce
+        curr_nonce = platon.getTransactionCount(Web3.toChecksumAddress(transaction_list[0]["from"]))
+
         # 发送交易
         print('\nstart to send transfer transaction, please wait...\n')
         for one_transaction in transaction_list:
-             try:
-                transfer_send(url, one_transaction["rawTransaction"])
-             except Exception as e:
-                 continue
+            if curr_nonce > int(one_transaction["nonce"]):
+                continue
+            transfer_send(platon, one_transaction["rawTransaction"])
+            sleep(1)
+
     except Exception as e:
         print('{} {}'.format('exception: ', e))
         print('batch send transfer transaction failure!!!')

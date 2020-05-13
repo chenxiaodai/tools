@@ -95,15 +95,19 @@ press:
     #发起交易的私钥文件
     keys-file: ./platon-press-config/keys.csv
     #压测线程的数量
-    disruptor-consumer-number: 300
+    disruptor-consumer-number: 1
     #消费线程sleep的时间，单位毫秒
-    consumer-thread-sleep-duration: 3000
+    consumer-thread-sleep-duration: 0
     #如果设置等待回执，获取回执的次数
     receipt-attempts: 3
     #如果设置等待回执，获取回执的等待时间，单位毫秒
     receipt-sleep-duration: 1000
+    #转账交易是否使用节点gas估算接口
+    tranfer-estimate-gas: false
+    #如果通过gas估算接口估算，添加的保险值
+    tranfer-gas-insurance-value: 0
     #转账交易的gasPrice
-    tranfer-gas-price: 500000000000
+    tranfer-gas-price: 10000000000
     #转账交易的gasLimit
     tranfer-gas-limit: 21000
     #转账交易是否需要等待回执
@@ -112,14 +116,22 @@ press:
     tranfer-to-addrs-file: ./platon-press-config/to-address.txt
     #转账的金额，单位VON
     tranfer-value: 1
+    #evm交易是否使用节点gas估算接口
+    evm-estimate-gas: true
+    #如果通过gas估算接口估算，添加的保险值
+    evm-gas-insurance-value: 0
     #evm交易的gasPrice
-    evm-gas-price: 500000000000
+    evm-gas-price: 10000000000
     #evm交易的gasLimit
     evm-gas-limit: 21000
     #evm交易的gasLimit
     evm-need-receipt: false
     #evm测试合约地址
     evm-addr: "0xfbdf3c5bf983cdf67685883f8eaabfd4e31249ec"
+    #wasm交易是否使用节点gas估算接口
+    wasm-estimate-gas: true
+    #如果通过gas估算接口估算，添加的保险值
+    wasm-gas-insurance-value: 50000
     #wasm交易的gasPrice
     wasm-gas-price: 500000000000
     #wasm交易的gasLimit

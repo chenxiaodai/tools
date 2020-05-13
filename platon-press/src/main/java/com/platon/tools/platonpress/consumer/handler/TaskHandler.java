@@ -136,8 +136,7 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
     }
 
     private RawTransaction createTransaction(TxEvent txEvent, Credentials credentials, String to, BigInteger nonce){
-        BigInteger gasPrice = txEvent.getGasPrice();
-        BigInteger gasLimit = txEvent.getGasLimit();
+
         BigInteger amount = BigInteger.ZERO;
         if(txEvent instanceof TranferTxEvent){
             amount = pressProperties.getTranferValue();
@@ -151,6 +150,13 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
             Function evmFunction = new Function("record", Arrays.<Type>asList(new Utf8String(pressProperties.getNodePublicKey())), Collections.<TypeReference<?>>emptyList());
             data = FunctionEncoder.encode(evmFunction);
         }
+
+        BigInteger gasPrice = txEvent.getGasPrice();
+        BigInteger gasLimit = txEvent.getGasLimit();
+        if(txEvent.isEstimateGas()){
+            gasLimit = platOnClient.platonEstimateGas(credentials.getAddress(), to, data).add(txEvent.getGasInsuranceValue());
+        }
+
         return RawTransaction.createTransaction(nonce, gasPrice, gasLimit, to, amount, data);
     }
 }

@@ -1,5 +1,6 @@
 package com.platon.tools.platonpress;
 
+import com.platon.rlp.datatypes.Uint64;
 import com.platon.tools.platonpress.contract.evm.PressureContract;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -11,6 +12,7 @@ import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterNumber;
 import org.web3j.protocol.core.methods.response.PlatonBlock;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.Transfer;
@@ -40,24 +42,46 @@ public class TestDataCreate {
     private static String passwd = "88888888";
     private static String template = "\"{address}\": {\"balance\": \"0x200000000000000000000000000000000000000000000000000000000000\"},";
     private static List<String> nodeList = Arrays.asList(
-            "0x9999999999994f3d07b6cbcf3c10b6b4ccf605202868e2043b6f5db12b745df0604ef01ef4cb523adc6d9e14b83a76dd09f862e3fe77205d8ac83df707969b47",
+            "0x28f95bee4ce1cb0d7523e430a85349f12897c29cc431f294078a27a6f950a6df8ef9b25c2143e72f6ad525d992c913503e2715b5b2768587d633dd9fa109999",
+            "0x0abaf3219f454f3d07b6cbcf3c10b6b4ccf605202868e2043b6f5db12b745df0604ef01ef4cb523adc6d9e14b83a76dd09f862e3fe77205d8ac83df707969b47",
             "0xe0b6af6cc2e10b2b74540b87098083d48343805a3ff09c655eab0b20dba2b2851aea79ee75b6e150bde58ead0be03ee4a8619ea1dfaf529cbb8ff55ca23531ed",
             "0x15245d4dceeb7552b52d70e56c53fc86aa030eab6b7b325e430179902884fca3d684b0e896ea421864a160e9c18418e4561e9a72f911e2511c29204a857de71a",
-            "0xfb886b3da4cf875f7d85e820a9b39df2170fd1966ffa0ddbcd738027f6f8e0256204e4873a2569ef299b324da3d0ed1afebb160d8ff401c2f09e20fb699e4005",
-            "0x77fffc999d9f9403b65009f1eb27bae65774e2d8ea36f7b20a89f82642a5067557430e6edfe5320bb81c3666a19cf4a5172d6533117d7ebcd0f2c82055499050"
+            "0xfb886b3da4cf875f7d85e820a9b39df2170fd1966ffa0ddbcd738027f6f8e0256204e4873a2569ef299b324da3d0ed1afebb160d8ff401c2f09e20fb699e4005"
+//            "0x77fffc999d9f9403b65009f1eb27bae65774e2d8ea36f7b20a89f82642a5067557430e6edfe5320bb81c3666a19cf4a5172d6533117d7ebcd0f2c82055499050"
             );
-    private static Web3j web3j =  Web3j.build(new HttpService("http://192.168.120.145:6789"));
-    private static String chainId = "103";
-    private static Credentials superCredentials = Credentials.create("0xa689f0879f53710e9e0c1025af410a530d6381eebb5916773195326e123b822b");
+    private static Web3j web3j =  Web3j.build(new HttpService("http://192.168.16.11:6789"));
+//    private static Web3j web3j =  Web3j.build(new HttpService("http://10.10.8.191:6789"));
+
+    private static String chainId = "298";
+    private static Credentials superCredentials = Credentials.create("0x28fe9af99332a7b9bd71c66f43af6623f3944b289f9f4326cf78712c8a0c4c41");
     private static String gasLimit = "4712388";
     private static String gasPrice = "500000000000";
     private static ContractGasProvider provider = new ContractGasProvider(new BigInteger(gasPrice), new BigInteger(gasLimit));;
     private static RawTransactionManager adminTransactionManager = new RawTransactionManager(web3j, superCredentials, Long.valueOf(chainId));
 
-    private static BigInteger beginBlock = BigInteger.valueOf(1000L);
-    private static BigInteger endBlock = BigInteger.valueOf(10000000000L);
-    private static String evmAddress = "0x905e9b518fbc71952145bcaa974c09168a7d7c41";
-    private static String wasmAddress = "0x515d82f18f6a7d4c54702c973cb6f6deb88878d8";
+    private static BigInteger beginBlock;
+    private static BigInteger endBlock = BigInteger.valueOf(899106L);
+
+    static {
+        try {
+            beginBlock = web3j.platonBlockNumber().send().getBlockNumber();
+            endBlock = beginBlock.add(BigInteger.valueOf(10000));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private static String evmAddress = "0x2979c0e84f32fa29bb558b4fad04354a1299d9e9";
+    private static String wasmAddress = "0x387c2fcc30ba3fe97dbae3ff70ad66b5bc210148";
+
+
+    @Test
+    public void  testxxx() throws Exception {
+        TransactionReceipt tr = Transfer.sendFunds(web3j, superCredentials, chainId, "0x568ffeb144e0cdaed0ca663ee49b6eebc906f6b3", new BigDecimal("1"), Convert.Unit.VON).send();
+        System.out.println(tr.getTransactionHash());
+    }
+
 
     /**
      * 创建测试钱包
@@ -148,9 +172,6 @@ public class TestDataCreate {
         log.info("createToAddress finish! time={}s", (System.currentTimeMillis()-begin)/1000);
     }
 
-
-
-
     @Test
     public void  deployEvm() throws Exception {
         PressureContract pressureContract = PressureContract.deploy(web3j,adminTransactionManager,provider,beginBlock,endBlock).send();
@@ -159,9 +180,66 @@ public class TestDataCreate {
 
     @Test
     public void  deployWasm() throws Exception {
-        com.platon.tools.platonpress.contract.wasm.PressureContract pressureContract = com.platon.tools.platonpress.contract.wasm.PressureContract.deploy(web3j,adminTransactionManager,provider,beginBlock,endBlock).send();
+        com.platon.tools.platonpress.contract.wasm.PressureContract  pressureContract = com.platon.tools.platonpress.contract.wasm.PressureContract.deploy(web3j,adminTransactionManager,provider, Uint64.of(beginBlock),Uint64.of(endBlock)).send();
         log.info("wasm contract address = {}",pressureContract.getContractAddress());
     }
+
+    @Test
+    public void  deploy() throws Exception {
+        PressureContract pressureContract1 = PressureContract.deploy(web3j,adminTransactionManager,provider,beginBlock,endBlock).send();
+        com.platon.tools.platonpress.contract.wasm.PressureContract  pressureContract = com.platon.tools.platonpress.contract.wasm.PressureContract.deploy(web3j,adminTransactionManager,provider, Uint64.of(beginBlock),Uint64.of(endBlock)).send();
+        log.info("beginBlock = {}  endBlock = {}", beginBlock, endBlock);
+        log.info("wasm contract address = {}",pressureContract.getContractAddress());
+        log.info("evm contract address = {}",pressureContract1.getContractAddress());
+    }
+
+
+    @Test
+    public void  setBeginAndEndWasm() throws Exception {
+        com.platon.tools.platonpress.contract.wasm.PressureContract pressureContract = com.platon.tools.platonpress.contract.wasm.PressureContract.load(wasmAddress,web3j,adminTransactionManager,provider);
+
+        String cleanHash = pressureContract.clearMap().send().getTransactionHash();
+        String setBeginHash = pressureContract.setBeginAndEndBlock( Uint64.of(beginBlock),Uint64.of(beginBlock.add(BigInteger.valueOf(600L)))).send().getTransactionHash();
+
+        log.info("wasm clean = {}", cleanHash);
+        log.info("wasm setBegin = {}", setBeginHash);
+        log.info("wasm begin = {} end = {} ", beginBlock );
+    }
+
+    @Test
+    public void  setBeginAndEndEvm() throws Exception {
+        PressureContract pressureContract = PressureContract.load(evmAddress,web3j,adminTransactionManager,provider);
+
+        String cleanHash = pressureContract.clearMap().send().getTransactionHash();
+        String setBeginHash = pressureContract.setBeginAndEndBlock(beginBlock, beginBlock.add(BigInteger.valueOf(600L))).send().getTransactionHash();
+
+        log.info("evm clean = {}", cleanHash);
+        log.info("evm setBegin = {}", setBeginHash);
+    }
+
+    @Test
+    public void  setBeginAndEnd() throws Exception {
+        BigInteger begin = beginBlock;
+        BigInteger end = beginBlock.add(BigInteger.valueOf(3600L));
+
+        PressureContract pressureContract1 = PressureContract.load(evmAddress,web3j,adminTransactionManager,provider);
+
+        String cleanHash1 = pressureContract1.clearMap().send().getTransactionHash();
+        String setBeginHash1 = pressureContract1.setBeginAndEndBlock(beginBlock, end).send().getTransactionHash();
+
+
+        com.platon.tools.platonpress.contract.wasm.PressureContract pressureContract = com.platon.tools.platonpress.contract.wasm.PressureContract.load(wasmAddress,web3j,adminTransactionManager,provider);
+
+        String cleanHash = pressureContract.clearMap().send().getTransactionHash();
+        String setBeginHash = pressureContract.setBeginAndEndBlock( Uint64.of(beginBlock),Uint64.of(end)).send().getTransactionHash();
+
+        log.info("begin = {}  end = {}", begin,end);
+        log.info("evm clean = {}", cleanHash1);
+        log.info("evm setBegin = {}", setBeginHash1);
+        log.info("wasm clean = {}", cleanHash);
+        log.info("wasm setBegin = {}", setBeginHash);
+    }
+
 
     @Test
     public void  setEvm() throws Exception {
@@ -170,7 +248,8 @@ public class TestDataCreate {
                 .stream()
                 .map( nodeId ->{
                     try {
-                        return pressureContract.record(nodeId).send().getTransactionHash();
+                        TransactionReceipt transactionReceipt = pressureContract.record(nodeId).send();
+                        return transactionReceipt.getTransactionHash() + " gasUsed = "+ transactionReceipt.getGasUsed();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -188,7 +267,8 @@ public class TestDataCreate {
                 .stream()
                 .map( nodeId ->{
                     try {
-                        return pressureContract.record(nodeId).send().getTransactionHash();
+                        TransactionReceipt transactionReceipt = pressureContract.record(nodeId).send();
+                        return transactionReceipt.getTransactionHash() + " gasUsed = "+ transactionReceipt.getGasUsed();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -233,6 +313,89 @@ public class TestDataCreate {
 
         log.info("wasm get result =  {}",result);
     }
+
+    @Test
+    public void  wasmTest() throws Exception {
+        nodeList = new ArrayList<>();
+        for (int i = 0; i < 110; i++) {
+            nodeList.add("0x28f95bee4ce1cb0d7523e430a85349f12897c29cc431f294078a27a6f950a6df8ef9b25c2143e72f6ad525d992c913503e2715b5b2768587d633dd9fa102f61b"+i);
+        }
+
+
+
+        com.platon.tools.platonpress.contract.wasm.PressureContract pressureContract = com.platon.tools.platonpress.contract.wasm.PressureContract.load(wasmAddress,web3j,adminTransactionManager,provider);
+
+//        List<String> result1 = new ArrayList<>();
+//        BigInteger last = BigInteger.ZERO;
+//        for (int i = 0; i < 110; i++) {
+//            String nodeId = nodeList.get(i);
+//            WasmFunction wasmFunction = new WasmFunction("record", Arrays.asList(nodeId), Void.class);
+//            String data = WasmFunctionEncoder.encode(wasmFunction);
+//            Transaction transaction = Transaction.createEthCallTransaction(superCredentials.getAddress(), wasmAddress, data);
+//            BigInteger used = web3j.platonEstimateGas(transaction).send().getAmountUsed();
+//
+//
+//            pressureContract.setGasProvider(new ContractGasProvider(new BigInteger(gasPrice), used));
+//
+//            TransactionReceipt transactionReceipt = pressureContract.record(nodeId).send();
+//            result1.add( "i = " + i +" hash = "+transactionReceipt.getTransactionHash()+"  gasLimit = "+transactionReceipt.getGasUsed()+"  esGasLimit = "+ used +"  diff = " + transactionReceipt.getGasUsed().subtract(last));
+//            System.err.println(result1);
+//            last = transactionReceipt.getGasUsed();
+//        }
+
+
+        List<String> result2 = new ArrayList<>();
+        for (int i = 0; i < 110; i++) {
+            String nodeId = nodeList.get(i);
+
+            BigInteger value  = pressureContract.getValue(nodeId).send();
+
+            result2.add( "i = " + i +" nodeId = "+nodeId+"  value = "+value);
+            System.err.println(result2);
+        }
+
+
+//        List<String> result1 = nodeList
+//                .stream()
+//                .map( nodeId ->{
+//                    try {
+//                        TransactionReceipt transactionReceipt = pressureContract.record(nodeId).send();
+//                        return transactionReceipt.getTransactionHash()+"  "+transactionReceipt.getGasUsed();
+//                    } catch (Exception e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                })
+//                .collect(Collectors.toList());
+//
+//        List<String> result2 = nodeList
+//                .stream()
+//                .map( nodeId ->{
+//                    try {
+//                        TransactionReceipt transactionReceipt = pressureContract.record(nodeId).send();
+//                        return transactionReceipt.getTransactionHash()+"  "+transactionReceipt.getGasUsed();
+//                    } catch (Exception e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                })
+//                .collect(Collectors.toList());
+//
+//        List<String> result3 = nodeList
+//                .stream()
+//                .map( nodeId ->{
+//                    try {
+//                        TransactionReceipt transactionReceipt = pressureContract.record(nodeId).send();
+//                        return transactionReceipt.getTransactionHash()+"  "+transactionReceipt.getGasUsed();
+//                    } catch (Exception e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                })
+//                .collect(Collectors.toList());
+//
+//        log.info("1 wasm set txhash = {}", result1);
+//        log.info("2 wasm set txhash = {}", result2);
+//        log.info("3 wasm set txhash = {}", result3);
+    }
+
 
     @Test
     public void checkBlockGasLimit(){

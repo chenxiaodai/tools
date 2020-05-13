@@ -5,9 +5,9 @@ spring:
         banner-mode: off
 press:
     #节点rpc端口
-    node-url: http://192.168.112.141:6789
+    node-url: http://192.168.16.11:6789
     #节点公钥
-    node-public-key: "0x28f95bee4ce1cb0d7523e430a85349f12897c29cc431f294078a27a6f950a6df8ef9b25c2143e72f6ad525d992c913503e2715b5b2768587d633dd9fa102f61b"
+    node-public-key: "0x..........."
 logging:
     pattern:
         console: "%date %msg%n"

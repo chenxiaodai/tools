@@ -7,10 +7,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.response.PlatonGetTransactionCount;
-import org.web3j.protocol.core.methods.response.PlatonGetTransactionReceipt;
-import org.web3j.protocol.core.methods.response.PlatonSendTransaction;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.core.methods.request.Transaction;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.protocol.websocket.WebSocketService;
 
@@ -78,6 +76,20 @@ public class PlatOnClient {
                 throw new RuntimeException(platonSendTransaction.getError().getMessage());
             }
             return platonSendTransaction.getTransactionReceipt();
+        } catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public BigInteger platonEstimateGas(String from, String to, String data) {
+        try {
+            Transaction transaction = Transaction.createEthCallTransaction(from, to, data);
+            PlatonEstimateGas platonEstimateGas = web3j.platonEstimateGas(transaction).send();
+            if(platonEstimateGas.hasError()){
+                throw new RuntimeException(platonEstimateGas.getError().getMessage());
+            }
+            return platonEstimateGas.getAmountUsed();
         } catch (Exception e){
             throw new RuntimeException(e);
         }

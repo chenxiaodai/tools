@@ -49,16 +49,22 @@ public class TaskProducerImpl implements TaskProducer {
                             txEvent.setGasLimit(pressProperties.getTranferGasLimit());
                             txEvent.setGasPrice(pressProperties.getTranferGasPrice());
                             txEvent.setNeedReceipt(pressProperties.isTranferNeedReceipt());
+                            txEvent.setEstimateGas(pressProperties.isTranferEstimateGas());
+                            txEvent.setGasInsuranceValue(pressProperties.getTranferGasInsuranceValue());
                         }else if(evmRateRange.contains(to)){
                             txEvent = new EvmContractTxEvent();
                             txEvent.setGasLimit(pressProperties.getEvmGasLimit());
                             txEvent.setGasPrice(pressProperties.getEvmGasPrice());
                             txEvent.setNeedReceipt(pressProperties.isEvmNeedReceipt());
+                            txEvent.setEstimateGas(pressProperties.isEvmEstimateGas());
+                            txEvent.setGasInsuranceValue(pressProperties.getEvmGasInsuranceValue());
                         }else if(wasmRateRange.contains(to)){
                             txEvent = new WasmContractTxEvent();
                             txEvent.setGasLimit(pressProperties.getWasmGasLimit());
                             txEvent.setGasPrice(pressProperties.getWasmGasPrice());
                             txEvent.setNeedReceipt(pressProperties.isWasmNeedReceipt());
+                                txEvent.setEstimateGas(pressProperties.isWasmEstimateGas());
+                            txEvent.setGasInsuranceValue(pressProperties.getWasmGasInsuranceValue());
                         }else {
                             throw new RuntimeException("tx-type or tx-rate config error!");
                         }

@@ -9,4 +9,6 @@ public class TxEvent {
     private BigInteger gasPrice;
     private BigInteger gasLimit;
     private boolean isNeedReceipt;
+    private boolean isEstimateGas;
+    private BigInteger gasInsuranceValue;
 }
