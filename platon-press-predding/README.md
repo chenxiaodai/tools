@@ -69,9 +69,9 @@ python3 batch_transfer_send.py -f ./signed_batch_transfer_to_1.csv -c ./config.j
 
 e. 总账户到节点账户转账检查
 ```shell
-python3 batch_get_account_balance.py -f ./multi/multi.csv -c ./config.json | grep amount:0LAT
+python3 batch_get_account_balance.py -f ./multi/multi.csv -c ./config.json | grep amount:1001000LAT | wc -l
 ```
-> 无转账金额为0的记录代表成功
+> 匹配记录数为130个代表成功
 
 
 ### 3 生成压测钱包
