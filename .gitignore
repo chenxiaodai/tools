@@ -29,3 +29,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### test ###
+platon-recover-config/wallets/*
+platon-press-config/keys/*
+platon-press-config/*.yaml
+platon-press-config/keys.alloc
+platon-press-config/keys.csv
+logs/*

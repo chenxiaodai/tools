@@ -3,11 +3,18 @@ spring:
         name: platon-press
     main:
         banner-mode: off
+    #设置缓存
+    cache:
+        caffeine:
+            spec: maximumSize=100,expireAfterWrite=5s
+        type: caffeine
 press:
     #节点rpc端口
     node-url: http://192.168.16.11:6789
     #节点公钥
     node-public-key: "0x..........."
+
+
 logging:
     pattern:
         console: "%date %msg%n"

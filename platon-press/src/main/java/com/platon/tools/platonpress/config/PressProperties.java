@@ -25,6 +25,12 @@ public class PressProperties {
     private File  keystoreDir;
     private String  keystorePasswd;
     private File keysFile = new File("./platon-press-config/keys.csv");
+    private int keyIndex = 0;
+    private int keySize = 10000;
+
+    private boolean limitMaxPendingTxSize = true;
+    private int maxPendingTxSize = 3072;
+    private int onMaxPendingTxSizeSleep = 5000;
 
     private boolean tranferEstimateGas = false;
     private BigInteger tranferGasInsuranceValue = BigInteger.valueOf(0L);
@@ -60,7 +66,7 @@ public class PressProperties {
     /**
      * 消费线程的数据
      */
-    private int disruptorConsumerNumber  = 1;
+    private int disruptorConsumerNumber  = 5;
     /**
      * 获取回执的次数
      */

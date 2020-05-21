@@ -63,7 +63,8 @@ public class CredentialsManagerImpl implements CredentialsManager {
         if(null != keysFile && keysFile.exists()&&keysFile.isFile()){
             credentialsListFromKeyFile = FileUtils.readLines(keysFile, StandardCharsets.UTF_8)
                     .parallelStream()
-                    .skip(1)
+                    .skip(pressProperties.getKeyIndex() + 1)
+                    .limit(pressProperties.getKeySize())
                     .map(keyStr ->{
                         String key = keyStr.substring(keyStr.indexOf(",")+1);
                         return Credentials.create(Numeric.prependHexPrefix(key));

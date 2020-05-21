@@ -9,7 +9,9 @@ import com.platon.tools.platonpress.event.task.EvmContractTxEvent;
 import com.platon.tools.platonpress.event.task.TranferTxEvent;
 import com.platon.tools.platonpress.event.task.TxEvent;
 import com.platon.tools.platonpress.event.task.WasmContractTxEvent;
+import com.platon.tools.platonpress.exception.LimitException;
 import com.platon.tools.platonpress.manager.CredentialsManager;
+import com.platon.tools.platonpress.manager.LimitManager;
 import com.platon.tools.platonpress.manager.NonceManager;
 import com.platon.tools.platonpress.manager.ToAddressManager;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +52,8 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
     private PlatOnClient platOnClient;
     @Autowired
     private PressProperties pressProperties;
+    @Autowired
+    private LimitManager limitManager;
 
     @Override
     public void onEvent(ObjectEvent<TxEvent> event) throws Exception {
@@ -60,8 +64,13 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
         ResultEvent resultEvent = new ResultEvent();
         resultEvent.setBegin(new Date());
         try {
+
             TxEvent txEvent = event.getEvent();
             resultEvent.setEvent(txEvent);
+
+            //5. 限流
+            limitManager.isAllowed();
+
             //1. 获得Credentials
             credentials = credentialsManager.borrow();
             //2. 获得Credentials对应的nonce
@@ -70,9 +79,10 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
             to = toAddressManager.getAddress(txEvent);
             //4. 构造交易对象
             RawTransaction rawTransaction = createTransaction(txEvent, credentials, to, nonce);
-            //5. 签名
+
+            //6. 签名
             String signedData = signTransaction(rawTransaction,credentials);
-            //6. 提交
+            //7. 提交
             txHashLocal = Hash.sha3(signedData);
             resultEvent.setTxHash(txHashLocal);
             String txHashRemote = platOnClient.platonSendRawTransaction(signedData);
@@ -81,7 +91,7 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
             }
             nonceManager.incrementNonce(credentials.getAddress());
             resultEvent.setCommitOk(true);
-            //6. 查询回执
+            //8. 查询回执
             if(txEvent.isNeedReceipt()){
                 TransactionReceipt transactionReceipt = checkTransaction(txHashRemote);
                 if(transactionReceipt.isStatusOK()){
@@ -90,6 +100,9 @@ public class TaskHandler implements WorkHandler<ObjectEvent<TxEvent>> {
                     resultEvent.setReceiptOk(false);
                 }
             }
+        } catch (LimitException e){
+            resultEvent.setMsg(e.getMessage());
+            TimeUnit.MILLISECONDS.sleep(pressProperties.getOnMaxPendingTxSizeSleep());
         } catch (Exception e){
             resultEvent.setMsg(e.getMessage());
 

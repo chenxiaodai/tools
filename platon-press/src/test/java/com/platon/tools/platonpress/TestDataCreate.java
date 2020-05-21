@@ -1,5 +1,7 @@
 package com.platon.tools.platonpress;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.platon.rlp.datatypes.Uint64;
 import com.platon.tools.platonpress.contract.evm.PressureContract;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +38,9 @@ import java.util.stream.LongStream;
 public class TestDataCreate {
 
     private static File keystoreDir = new File("../platon-press-config/keyStores");
-    private static File keysDir = new File("../platon-press-config/keys");
-    private static File allocFile = new File("../platon-press-config/keys.alloc");
+    private static File keysDir = new File("../platon-press-config/node");
+    private static File jsonkeysDir = new File("../platon-press-config/node-json");
+    private static File allocFile = new File("../platon-press-config/node.alloc");
     private static File toAddressFile = new File("../platon-press-config/to-address.txt");
     private static String passwd = "88888888";
     private static String template = "\"{address}\": {\"balance\": \"0x200000000000000000000000000000000000000000000000000000000000\"},";
@@ -49,38 +52,37 @@ public class TestDataCreate {
             "0xfb886b3da4cf875f7d85e820a9b39df2170fd1966ffa0ddbcd738027f6f8e0256204e4873a2569ef299b324da3d0ed1afebb160d8ff401c2f09e20fb699e4005"
 //            "0x77fffc999d9f9403b65009f1eb27bae65774e2d8ea36f7b20a89f82642a5067557430e6edfe5320bb81c3666a19cf4a5172d6533117d7ebcd0f2c82055499050"
             );
-    private static Web3j web3j =  Web3j.build(new HttpService("http://192.168.16.11:6789"));
-//    private static Web3j web3j =  Web3j.build(new HttpService("http://10.10.8.191:6789"));
+//    private static Web3j web3j =  Web3j.build(new HttpService("http://192.168.16.11:6789"));
+//    private static String chainId = "298";
+//    private static Credentials superCredentials = Credentials.create("0x28fe9af99332a7b9bd71c66f43af6623f3944b289f9f4326cf78712c8a0c4c41");
 
-    private static String chainId = "298";
-    private static Credentials superCredentials = Credentials.create("0x28fe9af99332a7b9bd71c66f43af6623f3944b289f9f4326cf78712c8a0c4c41");
+    private static Web3j web3j =  Web3j.build(new HttpService("http://192.168.9.221:6789"));
+    private static String chainId = "100";
+    private static Credentials superCredentials = Credentials.create("0x6905e13456332c750ee490d780b94a5b4038fcf61f6de44c0f8424aa89cbc300");
+
     private static String gasLimit = "4712388";
     private static String gasPrice = "500000000000";
     private static ContractGasProvider provider = new ContractGasProvider(new BigInteger(gasPrice), new BigInteger(gasLimit));;
     private static RawTransactionManager adminTransactionManager = new RawTransactionManager(web3j, superCredentials, Long.valueOf(chainId));
 
     private static BigInteger beginBlock;
-    private static BigInteger endBlock = BigInteger.valueOf(899106L);
+    private static BigInteger endBlock;
 
     static {
         try {
             beginBlock = web3j.platonBlockNumber().send().getBlockNumber();
-            endBlock = beginBlock.add(BigInteger.valueOf(10000));
+            endBlock = beginBlock.add(BigInteger.valueOf(36000));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
 
-    private static String evmAddress = "0x2979c0e84f32fa29bb558b4fad04354a1299d9e9";
-    private static String wasmAddress = "0x387c2fcc30ba3fe97dbae3ff70ad66b5bc210148";
+//    private static String evmAddress = "0xbb824bf5739bb250e84b53155e520f0aa96f5ac8";
+//    private static String wasmAddress = "0xa8087616a05ed6c4fe7f66669c3abfbc01f1ed86";
 
-
-    @Test
-    public void  testxxx() throws Exception {
-        TransactionReceipt tr = Transfer.sendFunds(web3j, superCredentials, chainId, "0x568ffeb144e0cdaed0ca663ee49b6eebc906f6b3", new BigDecimal("1"), Convert.Unit.VON).send();
-        System.out.println(tr.getTransactionHash());
-    }
+    private static String evmAddress = "0xb43c0f7f6d46b8d949be0d2fca274e79d3aad8b5";
+    private static String wasmAddress = "0x29ecd8cc6441360903eef8c7a92ff817bd48281c";
 
 
     /**
@@ -172,6 +174,42 @@ public class TestDataCreate {
         log.info("createToAddress finish! time={}s", (System.currentTimeMillis()-begin)/1000);
     }
 
+
+    @Test
+    public void createJsonKey(){
+        log.info("createJsonKey start!");
+        long begin = System.currentTimeMillis();
+        FileUtils.deleteQuietly(jsonkeysDir);
+        FileUtils.listFiles(keysDir,new String[] {"csv"},false)
+                .stream()
+                .forEach(file -> {
+                    try {
+                        createKeysJson(file,  FileUtils.getFile(jsonkeysDir,file.getName().replace(".csv",".json")));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+        log.info("createJsonKey finish! time={}s", (System.currentTimeMillis()-begin)/1000);
+    }
+
+
+    private void createKeysJson(File src, File desc) throws IOException {
+        JSONArray array = new JSONArray();
+        FileUtils.readLines(src, StandardCharsets.UTF_8)
+                .stream()
+                .skip(1)
+                .forEach(keyStr ->{
+                    String[] items = keyStr.split(",");
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("private_key",items[1]);
+                    jsonObject.put("address",items[0]);
+                    array.add(jsonObject);
+                });
+
+        FileUtils.write(desc, array.toString(), StandardCharsets.UTF_8);
+    }
+
     @Test
     public void  deployEvm() throws Exception {
         PressureContract pressureContract = PressureContract.deploy(web3j,adminTransactionManager,provider,beginBlock,endBlock).send();
@@ -220,7 +258,7 @@ public class TestDataCreate {
     @Test
     public void  setBeginAndEnd() throws Exception {
         BigInteger begin = beginBlock;
-        BigInteger end = beginBlock.add(BigInteger.valueOf(3600L));
+        BigInteger end = beginBlock.add(BigInteger.valueOf(3600L * 10));
 
         PressureContract pressureContract1 = PressureContract.load(evmAddress,web3j,adminTransactionManager,provider);
 

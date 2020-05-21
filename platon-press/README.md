@@ -94,6 +94,14 @@ press:
     chain-id: 102
     #发起交易的私钥文件
     keys-file: ./platon-press-config/keys.csv
+    #私钥文件加载索引
+    key-index: 0
+    #私钥文件加载大小
+    key-size: 10000
+    #是否开启限制最大的pendding交易数量
+    limit-max-pending-tx-size: true
+    #最大pending数量
+    max-pending-tx-size: 3072
     #压测线程的数量
     disruptor-consumer-number: 1
     #消费线程sleep的时间，单位毫秒
@@ -140,6 +148,7 @@ press:
     wasm-need-receipt: false
     #wasm测试合约地址
     wasm-addr: "0xaedf3c5bf983cdf67685883f8eaabfd4e31249ec"
+ 
     # -------------------------------------------自定义设置结束--------------------------------------------
 logging:
     pattern:
