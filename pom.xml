@@ -24,6 +24,7 @@
         <module>platon-press</module>
         <module>platon-demo-exchange</module>
         <module>platon-demo-pos</module>
+        <module>platon-press-demo</module>
     </modules>
 
     <dependencyManagement>

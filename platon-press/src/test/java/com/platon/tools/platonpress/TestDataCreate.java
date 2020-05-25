@@ -45,11 +45,11 @@ public class TestDataCreate {
     private static String passwd = "88888888";
     private static String template = "\"{address}\": {\"balance\": \"0x200000000000000000000000000000000000000000000000000000000000\"},";
     private static List<String> nodeList = Arrays.asList(
-            "0x28f95bee4ce1cb0d7523e430a85349f12897c29cc431f294078a27a6f950a6df8ef9b25c2143e72f6ad525d992c913503e2715b5b2768587d633dd9fa109999",
-            "0x0abaf3219f454f3d07b6cbcf3c10b6b4ccf605202868e2043b6f5db12b745df0604ef01ef4cb523adc6d9e14b83a76dd09f862e3fe77205d8ac83df707969b47",
-            "0xe0b6af6cc2e10b2b74540b87098083d48343805a3ff09c655eab0b20dba2b2851aea79ee75b6e150bde58ead0be03ee4a8619ea1dfaf529cbb8ff55ca23531ed",
-            "0x15245d4dceeb7552b52d70e56c53fc86aa030eab6b7b325e430179902884fca3d684b0e896ea421864a160e9c18418e4561e9a72f911e2511c29204a857de71a",
-            "0xfb886b3da4cf875f7d85e820a9b39df2170fd1966ffa0ddbcd738027f6f8e0256204e4873a2569ef299b324da3d0ed1afebb160d8ff401c2f09e20fb699e4005"
+            "0x8e91f562c1798dc8c567a5c4a99a840eb86e43324b622fd0a4a8defdf873baf8f822313d7f35227fe15b6f4a2767dfb9ea7f7968d0a3a243e57b4d1090f6fc6c"
+//            "0x0abaf3219f454f3d07b6cbcf3c10b6b4ccf605202868e2043b6f5db12b745df0604ef01ef4cb523adc6d9e14b83a76dd09f862e3fe77205d8ac83df707969b47",
+//            "0xe0b6af6cc2e10b2b74540b87098083d48343805a3ff09c655eab0b20dba2b2851aea79ee75b6e150bde58ead0be03ee4a8619ea1dfaf529cbb8ff55ca23531ed",
+//            "0x15245d4dceeb7552b52d70e56c53fc86aa030eab6b7b325e430179902884fca3d684b0e896ea421864a160e9c18418e4561e9a72f911e2511c29204a857de71a",
+//            "0xfb886b3da4cf875f7d85e820a9b39df2170fd1966ffa0ddbcd738027f6f8e0256204e4873a2569ef299b324da3d0ed1afebb160d8ff401c2f09e20fb699e4005"
 //            "0x77fffc999d9f9403b65009f1eb27bae65774e2d8ea36f7b20a89f82642a5067557430e6edfe5320bb81c3666a19cf4a5172d6533117d7ebcd0f2c82055499050"
             );
 //    private static Web3j web3j =  Web3j.build(new HttpService("http://192.168.16.11:6789"));
@@ -81,8 +81,9 @@ public class TestDataCreate {
 //    private static String evmAddress = "0xbb824bf5739bb250e84b53155e520f0aa96f5ac8";
 //    private static String wasmAddress = "0xa8087616a05ed6c4fe7f66669c3abfbc01f1ed86";
 
-    private static String evmAddress = "0xb43c0f7f6d46b8d949be0d2fca274e79d3aad8b5";
-    private static String wasmAddress = "0x29ecd8cc6441360903eef8c7a92ff817bd48281c";
+    private static String evmAddress = "0x18f46a8703e6751f060ae00a5f6c7705f38f4dcc";
+    private static String wasmAddress = "0xa16fe04a9bea4e5f06e7de75dfbc53ddc1edabf3";
+
 
 
     /**

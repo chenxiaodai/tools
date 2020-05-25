@@ -63,7 +63,7 @@ python3 batch_generate_signed_transfer.py -f ./main/main_1.csv -t ./multi/multi.
 
 d. 总账户到节点账户转账
 ```shell
-python3 batch_transfer_send.py -f ./signed_batch_transfer_to_1.csv -c ./config.json
+python3 batch_transfer_send.py -f ./signed_batch_transfer_multi.csv -c ./config.json
 ```
 > 如果中途发生连接节点中断等情况导致发送交易中断，可重复执行上述命令。
 

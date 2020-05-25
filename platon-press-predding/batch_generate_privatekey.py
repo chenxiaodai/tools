@@ -1,11 +1,13 @@
 import csv
 import datetime
+import json
 import os
 import sys
 
 import click
 
 from platon_utility import generate_key, write_csv
+
 
 @click.command()
 @click.option('-s', '--startindex', default=1, help='Start the subscript.')
@@ -31,12 +33,12 @@ def batch_generate_prikey(startindex, nodenumber, addressnumber, designation):
     if designation == "":
         designation = "node"
 
-    csvPath = os.getcwd()
+    filepath = os.getcwd()
 
     # 创建保存私钥文件目录
-    csvPath = os.path.join(csvPath, designation)
-    if not os.path.exists(csvPath):
-        os.makedirs(csvPath)
+    filepath = os.path.join(filepath, designation)
+    if not os.path.exists(filepath):
+        os.makedirs(filepath)
 
     # 根据账户名称生成批量生成钱包
     try:
@@ -47,33 +49,44 @@ def batch_generate_prikey(startindex, nodenumber, addressnumber, designation):
             node_name = designation + "_%d" % startindex
             startindex = startindex + 1
             # 保存私钥记录（csv）
-            all_prikey_per_node = []
+            all_csv_prikey_per_node = []
+            all_json_prikey_per_node = []
             # 轮询生成
             for i in range(0, addressnumber):
                 address, prikey = generate_key()
-                all_prikey_per_node.append({"address": address.lower(), "private": prikey})
+                all_csv_prikey_per_node.append({"address": address.lower(), "private": prikey})
+                all_json_prikey_per_node.append({"address": address.lower(), "private_key": prikey})
 
             if addressnumber == 1 and nodenumber != 1:
-                all_node_prikey.append(all_prikey_per_node[0])
+                all_node_prikey.append(all_csv_prikey_per_node[0])
 
             # 保存钱包地址记录（csv）
-            privatekey_csv_file = os.path.join(csvPath, node_name + ".csv")
+            privatekey_csv_file = os.path.join(filepath, node_name + ".csv")
+            # 保存钱包地址记录（json）
+            privatekey_json_file = os.path.join(filepath, node_name + ".json")
 
-            write_csv(privatekey_csv_file, all_prikey_per_node)
-            print('The 【{}】 wallet private key file was generated successfully：{}'.format(node_name, privatekey_csv_file))
-
+            # 保存csv
+            write_csv(privatekey_csv_file, all_csv_prikey_per_node)
+            print('The 【{}】 wallet private key file was generated successfully：{}'.format(node_name,
+                                                                                          privatekey_csv_file))
+            # 保存json
+            with open(privatekey_json_file, 'w') as f:
+                f.write(json.dumps(all_json_prikey_per_node))
+            print('The 【{}】 wallet private key file was generated successfully：{}'.format(node_name,
+                                                                                      privatekey_json_file))
+        # 如果每个节点只有一个地址，做一次所有节点的统计
         if addressnumber == 1 and nodenumber != 1:
-            all_privatekey_csv_file = os.path.join(csvPath, designation + ".csv")
+            all_privatekey_csv_file = os.path.join(filepath, designation + ".csv")
             write_csv(all_privatekey_csv_file, all_node_prikey)
-            print('The 【{}】 wallet private key file was generated successfully：{}'.format(designation,
-                                                                                          all_privatekey_csv_file))
+            print('The 【{}】 wallet private key file was generated successfully：{}'.
+                  format(designation, all_privatekey_csv_file))
     except Exception as e:
         print('{} {}'.format('exception: ', e))
         print('batch create wallet failure!!!')
         sys.exit(1)
 
     else:
-        print('{}{} {}'.format('SUCCESS\n', "Batch generation of wallet private key files in:", csvPath))
+        print('{}{} {}'.format('SUCCESS\n', "Batch generation of wallet private key files in:", filepath))
         end = datetime.datetime.now()
         print("end：{}".format(end))
         print("总共消耗时间：{}s".format((end - start).seconds))
