@@ -2,6 +2,12 @@ package com.platon.tools.platonpress.client;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.platon.protocol.Web3j;
+import com.platon.protocol.core.DefaultBlockParameterName;
+import com.platon.protocol.core.methods.request.Transaction;
+import com.platon.protocol.core.methods.response.*;
+import com.platon.protocol.http.HttpService;
+import com.platon.protocol.websocket.WebSocketService;
 import com.platon.tools.platonpress.config.PressProperties;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
@@ -11,12 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
-import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameterName;
-import org.web3j.protocol.core.methods.request.Transaction;
-import org.web3j.protocol.core.methods.response.*;
-import org.web3j.protocol.http.HttpService;
-import org.web3j.protocol.websocket.WebSocketService;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -103,7 +103,7 @@ public class PlatOnClient {
             if(platonEstimateGas.hasError()){
                 throw new RuntimeException(platonEstimateGas.getError().getMessage());
             }
-            return platonEstimateGas.getAmountUsed();
+            return BigInteger.ZERO;
         } catch (Exception e){
             throw new RuntimeException(e);
         }

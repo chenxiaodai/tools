@@ -1,0 +1,22 @@
+spring:
+    application:
+        name: platon-press-demo
+    main:
+        banner-mode: off
+press:
+    #节点rpc端口
+    node-url: http://192.168.9.190:6666
+    #节点公钥
+    node-public-key: "0x..........."
+
+logging:
+    pattern:
+        console: "%date %msg%n"
+        file: "%date %msg%n"
+    level:
+        root: error
+        spring: error
+        org.web3j: error
+        com.platon.tools: info
+    file:
+        name: ./logs/pressdemo.log

@@ -1,14 +1,14 @@
 package com.platon.tools.platonpress.manager.impl;
 
+import com.platon.crypto.Credentials;
+import com.platon.crypto.WalletUtils;
 import com.platon.tools.platonpress.config.PressProperties;
 import com.platon.tools.platonpress.manager.CredentialsManager;
+import com.platon.utils.Numeric;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.web3j.crypto.Credentials;
-import org.web3j.crypto.WalletUtils;
-import org.web3j.utils.Numeric;
 
 import javax.annotation.PostConstruct;
 import java.io.File;

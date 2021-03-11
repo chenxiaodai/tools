@@ -20,11 +20,7 @@
     </properties>
 
     <modules>
-        <module>platon-recover</module>
         <module>platon-press</module>
-        <module>platon-demo-exchange</module>
-        <module>platon-demo-pos</module>
-        <module>platon-press-demo</module>
     </modules>
 
     <dependencyManagement>
@@ -36,9 +32,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.platon.client</groupId>
+                <groupId>com.platon.sdk</groupId>
                 <artifactId>core</artifactId>
-                <version>0.11.0.1</version>
+                <version>0.15.1.8</version>
             </dependency>
 
             <dependency>
@@ -115,12 +111,8 @@
 
     <repositories>
         <repository>
-            <id>platon-dev</id>
-            <url>http://192.168.9.39:8081/repository/maven-releases/</url>
-        </repository>
-        <repository>
-            <id>platon-snapshots</id>
-            <url>http://192.168.9.39:8081/repository/maven-snapshots/</url>
+            <id>platon-public</id>
+            <url>https://sdk.platon.network/nexus/content/groups/public/</url>
         </repository>
     </repositories>
 </project>
